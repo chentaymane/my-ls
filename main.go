@@ -8,12 +8,15 @@ import (
 )
 
 /*
+
 -l
 -R
 -a
 -r
 -t
+
 */
+
 func main() {
 
 	var dirPath string
@@ -23,6 +26,12 @@ func main() {
 	} else {
 		dirPath = "."
 	}
+
+	if os.Args[1] == "-l" {
+		L(os.Args[2])
+		return
+	}
+
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		log.Fatal(err)
