@@ -30,6 +30,9 @@ func main() {
 	if os.Args[1] == "-l" {
 		L(os.Args[2])
 		return
+	} else if os.Args[1] == "-a" {
+		A(os.Args[2])
+		return
 	}
 
 	files, err := os.ReadDir(dirPath)
