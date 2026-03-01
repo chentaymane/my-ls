@@ -18,7 +18,6 @@ import (
 */
 
 func main() {
-
 	var dirPath string
 
 	if len(os.Args) > 1 {
@@ -33,8 +32,16 @@ func main() {
 	} else if os.Args[1] == "-a" {
 		A(os.Args[2])
 		return
+	} else if os.Args[1] == "-r" {
+		r(os.Args[2])
+		return
+	} else if os.Args[1] == "-t" {
+		t(os.Args[2])
+		return
+	} else if os.Args[1] == "-R" {
+		R(os.Args[2])
+		return
 	}
-
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		log.Fatal(err)
@@ -46,5 +53,4 @@ func main() {
 		}
 		fmt.Println(file.Name())
 	}
-
 }

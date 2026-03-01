@@ -67,11 +67,11 @@ func getFileColor(path string, name string) string {
 	// Check for directory
 	if mode.IsDir() {
 		// Check for sticky bit and other writable
-		if mode&os.ModeSticky != 0 && mode&0002 != 0 {
+		if mode&os.ModeSticky != 0 && mode&0o002 != 0 {
 			return "\033[30;42m" // Black text on green (sticky + other-writable)
 		}
 		// Check for other writable without sticky
-		if mode&0002 != 0 {
+		if mode&0o002 != 0 {
 			return "\033[34;42m" // Blue text on green (other-writable)
 		}
 		// Check for sticky bit
@@ -92,7 +92,7 @@ func getFileColor(path string, name string) string {
 	}
 
 	// Check for executable
-	if mode&0111 != 0 {
+	if mode&0o111 != 0 {
 		return green
 	}
 
