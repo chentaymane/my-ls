@@ -13,7 +13,6 @@ type FileInfo struct {
 	entry os.DirEntry
 }
 
-
 func sortByTime(files []FileInfo) {
 	n := len(files)
 	for i := 0; i < n; i++ {
@@ -25,11 +24,11 @@ func sortByTime(files []FileInfo) {
 	}
 }
 
-func t(path string) {
+func t(path string) string{
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 
 	var files []FileInfo
@@ -50,9 +49,10 @@ func t(path string) {
 	}
 
 	sortByTime(files)
-
+	var result string
 	for _, file := range files {
 		color := getColor(path+"/"+file.name, file.entry)
-		fmt.Printf("%s%s%s\n", color, file.name, Reset)
+		result += fmt.Sprintf("%s%s%s\n", color, file.name, Reset)
 	}
+	return result
 }

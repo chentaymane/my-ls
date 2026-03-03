@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-func R(path string) {
+func R(path string) string {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 
 	type item struct {
@@ -46,14 +46,14 @@ func R(path string) {
 			dirs = append(dirs, path+"/"+it.name)
 		}
 	}
-
+	var result string
 	fmt.Printf("%s:\n", path)
 	if len(names) > 0 {
-		fmt.Println(strings.Join(names, "  "))
+		result += strings.Join(names, "  ")
 	}
-	fmt.Println()
-
+	result += "\n"
 	for _, dir := range dirs {
 		R(dir)
 	}
+	return result
 }

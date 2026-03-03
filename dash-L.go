@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func L(filePath string) {
+func L(filePath string) string {
 	if filePath == "" {
 		filePath = "."
 	}
@@ -18,6 +18,7 @@ func L(filePath string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var result string
 
 	for _, file := range files {
 		if strings.HasPrefix(file.Name(), ".") {
@@ -70,7 +71,7 @@ func L(filePath string) {
 			}
 		}
 
-		fmt.Printf("%s %d %s %s %7d %s %s%s\n",
+		result += fmt.Sprintf("%s %d %s %s %7d %s %s%s\n",
 			info.Mode(),
 			stat.Nlink,
 			ownerName,
@@ -81,4 +82,5 @@ func L(filePath string) {
 			symlink,
 		)
 	}
+	return result
 }

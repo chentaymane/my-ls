@@ -117,11 +117,11 @@ func getFileColor(path string, name string) string {
 	return reset
 }
 
-func A(path string) {
+func A(path string) string {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 
 	var names []string
@@ -135,12 +135,13 @@ func A(path string) {
 
 	// Sort like original ls
 	sortNames(names)
-
+	var result string
 	for _, name := range names {
 		fullPath := path + "/" + name
 		color := getFileColor(fullPath, name)
 
 		// Add leading space like real ls does
-		fmt.Println(" " + color + formatName(name) + reset)
+		result += fmt.Sprint(" " + color + formatName(name) + reset)
 	}
+	return result
 }

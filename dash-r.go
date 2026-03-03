@@ -50,11 +50,11 @@ func reverseEntries(entries []entry) {
 	}
 }
 
-func r(path string) {
+func r(path string) string {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 
 	var entries []entry
@@ -67,9 +67,10 @@ func r(path string) {
 
 	sortEntries(entries)
 	reverseEntries(entries)
-
+	var result string
 	for _, e := range entries {
 		color := getColor(path+"/"+e.name, e.info)
-		fmt.Printf("%s%s%s\n", color, e.name, Reset)
+		result += fmt.Sprintf("%s%s%s\n", color, e.name, Reset)
 	}
+	return result
 }
