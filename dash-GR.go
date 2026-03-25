@@ -46,14 +46,15 @@ func R(path string) string {
 			dirs = append(dirs, path+"/"+it.name)
 		}
 	}
+
 	var result string
-	fmt.Printf("%s:\n", path)
+	result += fmt.Sprintf("%s:\n", path)
 	if len(names) > 0 {
 		result += strings.Join(names, "  ")
 	}
 	result += "\n"
 	for _, dir := range dirs {
-		R(dir)
+		result += R(dir)
 	}
 	return result
 }

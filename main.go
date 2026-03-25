@@ -26,20 +26,40 @@ func main() {
 		dirPath = "."
 	}
 
-	if os.Args[1] == "-l" {
-		L(os.Args[2])
+	if len(os.Args) > 1 && os.Args[1] == "-l" {
+		path := "."
+		if len(os.Args) > 2 {
+			path = os.Args[2]
+		}
+		fmt.Print(L(path))
 		return
-	} else if os.Args[1] == "-a" {
-		A(os.Args[2])
+	} else if len(os.Args) > 1 && os.Args[1] == "-a" {
+		path := "."
+		if len(os.Args) > 2 {
+			path = os.Args[2]
+		}
+		fmt.Println(A(path))
 		return
-	} else if os.Args[1] == "-r" {
-		r(os.Args[2])
+	} else if len(os.Args) > 1 && os.Args[1] == "-r" {
+		path := "."
+		if len(os.Args) > 2 {
+			path = os.Args[2]
+		}
+		fmt.Print(r(path))
 		return
-	} else if os.Args[1] == "-t" {
-		t(os.Args[2])
+	} else if len(os.Args) > 1 && os.Args[1] == "-t" {
+		path := "."
+		if len(os.Args) > 2 {
+			path = os.Args[2]
+		}
+		fmt.Print(t(path))
 		return
-	} else if os.Args[1] == "-R" {
-		R(os.Args[2])
+	} else if len(os.Args) > 1 && os.Args[1] == "-R" {
+		path := "."
+		if len(os.Args) > 2 {
+			path = os.Args[2]
+		}
+		fmt.Print(R(path))
 		return
 	}
 	files, err := os.ReadDir(dirPath)
