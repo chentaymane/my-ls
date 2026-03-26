@@ -8,69 +8,38 @@ import (
 )
 
 /*
-
--l
--R
--a
--r
--t
-
+Required flags:
+-l, -R, -a, -r, -t
 */
 
 func main() {
-	var dirPath string
+	paths, _ := parseFlags(os.Args[1:])
 
-	if len(os.Args) > 1 {
-		dirPath = os.Args[1]
+	if len(paths) == 1 {
+		singlePathLogic(paths[0])
 	} else {
-		dirPath = "."
+		for i, path := range paths {
+			if i > 0 {
+				fmt.Println()
+			}
+			fmt.Printf("%s:\n", path)
+			singlePathLogic(path)
+		}
 	}
+}
 
-	if len(os.Args) > 1 && os.Args[1] == "-l" {
-		path := "."
-		if len(os.Args) > 2 {
-			path = os.Args[2]
-		}
-		fmt.Print(L(path))
-		return
-	} else if len(os.Args) > 1 && os.Args[1] == "-a" {
-		path := "."
-		if len(os.Args) > 2 {
-			path = os.Args[2]
-		}
-		fmt.Println(A(path))
-		return
-	} else if len(os.Args) > 1 && os.Args[1] == "-r" {
-		path := "."
-		if len(os.Args) > 2 {
-			path = os.Args[2]
-		}
-		fmt.Print(r(path))
-		return
-	} else if len(os.Args) > 1 && os.Args[1] == "-t" {
-		path := "."
-		if len(os.Args) > 2 {
-			path = os.Args[2]
-		}
-		fmt.Print(t(path))
-		return
-	} else if len(os.Args) > 1 && os.Args[1] == "-R" {
-		path := "."
-		if len(os.Args) > 2 {
-			path = os.Args[2]
-		}
-		fmt.Print(R(path))
-		return
-	}
-	files, err := os.ReadDir(dirPath)
+func singlePathLogic(dirPath string) {
+	all_files, err := os.ReadDir(dirPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, file := range files {
+	var files []string
+	for _, file := range all_files {
 		if strings.HasPrefix(file.Name(), ".") {
 			continue
 		}
-		fmt.Println(file.Name())
+		files = append(files, file.Name())
 	}
+	fmt.Println(strings.Join(files, "  "))
 }
