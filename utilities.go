@@ -6,32 +6,38 @@ package main
 // 3. long listing columns alignement
 // 4. flags parsing: --(double dash alone)
 // 5. flags parsing: fallback mechanism (CLI flags > env vars > config file > hardcoded defaults)
+// 6. should handle concurrent file read and delete ?!
 
 type Config struct {
 	long, recursive, all, reverse, time bool
 }
 
+/*
+Required flags:
+-l, -R, -a, -r, -t
+*/
+
 func parseFlags(args []string) ([]string, Config) {
 	var paths []string // default "."
-	var flags Config
+	var config Config
 
 	for _, arg := range args {
 		switch arg {
 		case "-l":
-			flags.long = true
+			config.long = true
 			// 	fmt.Print(L(path))
 			//
 		case "-R", "--recursive":
-			flags.recursive = true
+			config.recursive = true
 			//
 		case "-a", "--all":
-			flags.all = true
+			config.all = true
 			//
 		case "-r", "--reverse":
-			flags.reverse = true
+			config.reverse = true
 			//
 		case "-t": // different from --time ?!
-			flags.time = true
+			config.time = true
 			//
 		default:
 			paths = append(paths, arg)
@@ -41,5 +47,5 @@ func parseFlags(args []string) ([]string, Config) {
 	if len(paths) == 0 {
 		paths = append(paths, ".")
 	}
-	return paths, flags
+	return paths, config
 }
