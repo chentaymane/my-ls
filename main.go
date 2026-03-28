@@ -2,10 +2,18 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 )
+
+// bugs and missings to handle in this version of the project:
+// 2. multiple flags with one dash
+// 3. long listing columns alignement
+// 4. flags parsing: --(double dash alone)
+// 5. flags parsing: fallback mechanism (CLI flags > env vars > config file > hardcoded defaults)
+// 6. should handle concurrent file read and delete ?!
+// 7. default alpha order is case insensitive (dot is skipped)
+// 8. dir entity names with space must be quoted
 
 func main() {
 	paths, config := parseFlags(os.Args[1:])
@@ -56,30 +64,4 @@ func main() {
 	} else {
 		singlePathLogic(dirs[0])
 	}
-
-	// if len(files) == 0
-
-	// 2. folders logic:
-
-	// if len(paths) == 1 {
-	// 	singlePathLogic(paths[0])
-	// } else {
-	// }
-}
-
-func singlePathLogic(dirPath string) {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var filenames []string
-	for _, file := range entries {
-		if strings.HasPrefix(file.Name(), ".") {
-			continue
-		}
-		filenames = append(filenames, file.Name())
-	}
-	fmt.Println(strings.Join(filenames, "  "))
-	// actually organized in columns with 2 space between !
 }

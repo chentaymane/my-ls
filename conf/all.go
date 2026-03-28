@@ -118,6 +118,9 @@ func getFileColor(path string, name string) string {
 }
 
 func A(path string) string {
+	// Note: default sort starts from the character after the dot '.'
+	// => if it starts with a dot doesnt make it first!
+
 	files, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)
