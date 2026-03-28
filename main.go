@@ -15,17 +15,19 @@ import (
 // 7. default alpha order is case insensitive (dot is skipped)
 // 8. dir entity names with space must be quoted
 
+// Notes:
+// 1. paths are printed just like they were passed! (in recursice, dir path is relative to grand parent ?)
+
 func main() {
 	paths, config := parseFlags(os.Args[1:])
 
 	// Order of listing:
 	// 1. errors
-	// 2. existing files (ascending alphabetical order)
+	// 2. existing files (ascending alphabetical order - case insensitive)
 	// 3. existing dirs (asc alpha order for dirs and their contents)
 	var files, dirs []string
 	for _, path := range paths {
 		info, err := os.Stat(path)
-		// FileInfo vs DirEntry ?!
 		if err != nil {
 			fmt.Println(err)
 			// permission denied error should be inline, and not before!?
@@ -40,28 +42,27 @@ func main() {
 		}
 	}
 
+	// print files
+	if len(files) > 0 {
+		printNames(files)
+	}
+
 	// when using folder title:
 	// 1. -R flag is setted
 	// 2. files is not empty (len(files) > 0)
 	// 3. multiple folders (len(dirs) > 1)
-
-	// Note: paths are printed just like they were passed!
-
-	// 1. files logic: {}
-	// **********************************
-	if len(files) > 0 {
-		fmt.Println(strings.Join(files, "  "))
-	}
-	// **********************************
 	if config.recursive || len(files) > 0 || len(dirs) > 1 {
 		for i, dir := range dirs {
 			if i > 0 || len(files) > 0 {
 				fmt.Println()
 			}
 			fmt.Printf("%s:\n", dir)
-			singlePathLogic(dir)
+			dir = strings.TrimSuffix(dir, "/")
+			// entry := NameToDirEntry(dir)
+			printDirectory(dir, config)
 		}
 	} else {
-		singlePathLogic(dirs[0])
+		// entry := NameToDirEntry(dirs[0])
+		printDirectory(dirs[0], config)
 	}
 }

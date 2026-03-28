@@ -70,3 +70,12 @@ func getTerminalWidth() uint {
 	return uint(ws.Col)
 	// return int(ws.Col), nil
 }
+
+// func NameToDirEntry(dir string) os.DirEntry { // too much code !
+// 	info, err := os.Stat(dir) // or os.Lstat(path)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return nil
+// 	}
+// 	return fs.FileInfoToDirEntry(info)
+// }

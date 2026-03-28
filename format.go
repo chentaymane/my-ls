@@ -2,26 +2,38 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"strings"
 )
 
-func singlePathLogic(dirPath string) {
-	entries, err := os.ReadDir(dirPath)
+func printDirectory(parent_path string, config Config) { // error ?
+	entries, err := os.ReadDir(parent_path)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	var filenames []string
-	for _, file := range entries {
-		if strings.HasPrefix(file.Name(), ".") {
+	var entrynames []string
+	var dirs []os.DirEntry
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".") && !config.all {
 			continue
 		}
-		filenames = append(filenames, file.Name())
+		if entry.IsDir() { // unuseful if not recursive!
+			dirs = append(dirs, entry)
+		}
+		entrynames = append(entrynames, entry.Name())
 	}
-	printNames(filenames)
+	printNames(entrynames)
+
+	if config.recursive {
+		for _, dir := range dirs {
+			fmt.Println()
+			dir_path := fmt.Sprintf("%s/%s", parent_path, dir.Name())
+			fmt.Println(dir_path + ":")
+			printDirectory(dir_path, config)
+		}
+	}
 }
 
 func printNames(names []string) {
