@@ -1,4 +1,4 @@
-package main
+package conf
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func sortByTime(files []FileInfo) {
 	}
 }
 
-func t(path string) string{
+func t(path string) string {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)
