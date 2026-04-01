@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"syscall"
 	"unsafe"
@@ -9,10 +10,9 @@ type Config struct {
 	long, recursive, all, reverse, time bool
 }
 
-/*
 Required flags:
 -l, -R, -a, -r, -t
-*/
+
 
 func parseFlags(args []string) ([]string, Config) {
 	var paths []string
@@ -54,21 +54,27 @@ type WinSize struct {
 }
 
 func getTerminalWidth() uint {
-	ws := &WinSize{}
-	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
-		uintptr(syscall.Stdin), // Stdout ?
-		uintptr(syscall.TIOCGWINSZ),
-		uintptr(unsafe.Pointer(ws)))
-
-	if int(retCode) == -1 {
-		panic(errno)
+	type winsize struct {
+		Row    uint16
+		Col    uint16
+		Xpixel uint16
+		Ypixel uint16
 	}
-	// OR:
-	// if err != 0 {
-	// 	return 80, fmt.Errorf("unable to get terminal size")
-	// }
+
+	ws := &winsize{}
+
+	_, _, err := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		uintptr(syscall.Stdout), //  FIX HERE
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)),
+	)
+
+	if err != 0 {
+		return 80 // fallback width
+	}
+
 	return uint(ws.Col)
-	// return int(ws.Col), nil
 }
 
 // func NameToDirEntry(dir string) os.DirEntry { // too much code !
@@ -79,3 +85,6 @@ func getTerminalWidth() uint {
 // 	}
 // 	return fs.FileInfoToDirEntry(info)
 // }
+
+
+*/

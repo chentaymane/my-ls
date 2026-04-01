@@ -24,7 +24,7 @@ func sortByTime(files []FileInfo) {
 	}
 }
 
-func t(path string) string {
+func T(path string) string {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println(err)

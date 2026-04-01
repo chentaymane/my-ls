@@ -3,66 +3,122 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
+
+	"main/conf"
 )
 
-// bugs and missings to handle in this version of the project:
-// 2. multiple flags with one dash
-// 3. long listing columns alignement
-// 4. flags parsing: --(double dash alone)
-// 5. flags parsing: fallback mechanism (CLI flags > env vars > config file > hardcoded defaults)
-// 6. should handle concurrent file read and delete ?!
-// 7. default alpha order is case insensitive (dot is skipped)
-// 8. dir entity names with space must be quoted
+type Config struct {
+	all       bool
+	long      bool
+	recursive bool
+	timeSort  bool
+	reverse   bool
+}
 
-// Notes:
-// 1. paths are printed just like they were passed! (in recursice, dir path is relative to grand parent ?)
 
-func main() {
-	paths, config := parseFlags(os.Args[1:])
+func simpleList(path string) string {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Sprintln(err)
+	}
 
-	// Order of listing:
-	// 1. errors
-	// 2. existing files (ascending alphabetical order - case insensitive)
-	// 3. existing dirs (asc alpha order for dirs and their contents)
-	var files, dirs []string
-	for _, path := range paths {
+	var result string
+
+	for _, entry := range entries {
+		name := entry.Name()
+
+		if len(name) > 0 && name[0] == '.' {
+			continue
+		}
+
+		result += name + "  "
+	}
+
+	result += "\n"
+	return result
+}
+
+//  SELECT FUNCTION
+func render(path string, config Config) string {
+	if config.long {
+		return conf.L(path)
+	}
+
+	if config.timeSort {
+		return conf.T(path)
+	}
+
+	if config.all {
+		return conf.A(path)
+	}
+
+	if config.recursive {
+		return conf.R(path)
+	}
+
+	return simpleList(path)
+}
+
+//  PRINT
+func printPaths(paths []string, config Config) {
+	for i, path := range paths {
+
 		info, err := os.Stat(path)
 		if err != nil {
 			fmt.Println(err)
-			// permission denied error should be inline, and not before!?
-			// or when opening folders ?!
 			continue
 		}
-		if info.IsDir() {
-			dirs = append(dirs, path)
-		} else {
-			// It is likely a file, but not always!
-			files = append(files, path)
+
+		if i > 0 {
+			fmt.Println()
 		}
-	}
 
-	// print files
-	if len(files) > 0 {
-		printNames(files)
-	}
+		// show title only when needed
+		if (len(paths) > 1 || config.recursive) && info.IsDir() {
+			fmt.Printf("%s:\n", path)
+		}
 
-	// when using folder title:
-	// 1. -R flag is setted
-	// 2. files is not empty (len(files) > 0)
-	// 3. multiple folders (len(dirs) > 1)
-	if config.recursive || len(files) > 0 || len(dirs) > 1 {
-		for i, dir := range dirs {
-			if i > 0 || len(files) > 0 {
-				fmt.Println()
+		fmt.Print(render(path, config))
+	}
+}
+
+//  PARSE FLAGS
+func parseFlags(args []string) ([]string, Config) {
+	var config Config
+	var paths []string
+
+	for _, arg := range args {
+
+		if len(arg) > 1 && arg[0] == '-' {
+			for _, ch := range arg[1:] {
+				switch ch {
+				case 'l':
+					config.long = true
+				case 'R':
+					config.recursive = true
+				case 'a':
+					config.all = true
+				case 'r':
+					config.reverse = true
+				case 't':
+					config.timeSort = true
+				default:
+					fmt.Printf("ls: invalid option -- '%c'\n", ch)
+				}
 			}
-			fmt.Printf("%s:\n", dir)
-			dir = strings.TrimSuffix(dir, "/")
-			// entry := NameToDirEntry(dir)
-			printDirectory(dir, config)
+		} else {
+			paths = append(paths, arg)
 		}
-	} else {
-		// entry := NameToDirEntry(dirs[0])
-		printDirectory(dirs[0], config)
 	}
+
+	if len(paths) == 0 {
+		paths = []string{"."}
+	}
+
+	return paths, config
+}
+
+func main() {
+	paths, config := parseFlags(os.Args[1:])
+	printPaths(paths, config)
 }
