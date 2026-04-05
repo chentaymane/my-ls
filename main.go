@@ -7,118 +7,52 @@ import (
 	"main/conf"
 )
 
-type Config struct {
-	all       bool
-	long      bool
-	recursive bool
-	timeSort  bool
-	reverse   bool
-}
+func main() {
+	args := os.Args[1:]
 
-
-func simpleList(path string) string {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return fmt.Sprintln(err)
-	}
-
-	var result string
-
-	for _, entry := range entries {
-		name := entry.Name()
-
-		if len(name) > 0 && name[0] == '.' {
-			continue
-		}
-
-		result += name + "  "
-	}
-
-	result += "\n"
-	return result
-}
-
-//  SELECT FUNCTION
-func render(path string, config Config) string {
-	if config.long {
-		return conf.L(path)
-	}
-
-	if config.timeSort {
-		return conf.T(path)
-	}
-
-	if config.all {
-		return conf.A(path)
-	}
-
-	if config.recursive {
-		return conf.R(path)
-	}
-
-	return simpleList(path)
-}
-
-//  PRINT
-func printPaths(paths []string, config Config) {
-	for i, path := range paths {
-
-		info, err := os.Stat(path)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		if i > 0 {
-			fmt.Println()
-		}
-
-		// show title only when needed
-		if (len(paths) > 1 || config.recursive) && info.IsDir() {
-			fmt.Printf("%s:\n", path)
-		}
-
-		fmt.Print(render(path, config))
-	}
-}
-
-//  PARSE FLAGS
-func parseFlags(args []string) ([]string, Config) {
-	var config Config
+	var flags string
 	var paths []string
 
-	for _, arg := range args {
-
-		if len(arg) > 1 && arg[0] == '-' {
-			for _, ch := range arg[1:] {
-				switch ch {
-				case 'l':
-					config.long = true
-				case 'R':
-					config.recursive = true
-				case 'a':
-					config.all = true
-				case 'r':
-					config.reverse = true
-				case 't':
-					config.timeSort = true
-				default:
-					fmt.Printf("ls: invalid option -- '%c'\n", ch)
-				}
-			}
+	for _, a := range args {
+		if len(a) > 1 && a[0] == '-' {
+			flags += a[1:]
 		} else {
-			paths = append(paths, arg)
+			paths = append(paths, a)
 		}
 	}
-
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
 
-	return paths, config
+	for i, path := range paths {
+		if i > 0 {
+			fmt.Println()
+		}
+		if len(paths) > 1 {
+			fmt.Printf("%s:\n", path)
+		}
+		switch {
+		case contains(flags, 'l'):
+			fmt.Print(conf.L(path))
+		case contains(flags, 'R'):
+			fmt.Print(conf.R(path))
+		case contains(flags, 'a'):
+			fmt.Print(conf.A(path))
+		case contains(flags, 't'):
+			fmt.Print(conf.T(path))
+		case contains(flags, 'r'):
+			fmt.Print(conf.SmallR(path))
+		default:
+			fmt.Print(conf.Default(path))
+		}
+	}
 }
 
-func main() {
-	paths, config := parseFlags(os.Args[1:])
-	printPaths(paths, config)
+func contains(flags string, c byte) bool {
+	for i := 0; i < len(flags); i++ {
+		if flags[i] == c {
+			return true
+		}
+	}
+	return false
 }

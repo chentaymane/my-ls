@@ -1,58 +1,36 @@
 package conf
 
 import (
-	"fmt"
 	"os"
-	"strings"
-	"time"
+	"sort"
 )
-
-type FileInfo struct {
-	name  string
-	mod   time.Time
-	entry os.DirEntry
-}
-
-func sortByTime(files []FileInfo) {
-	n := len(files)
-	for i := 0; i < n; i++ {
-		for j := 0; j < n-i-1; j++ {
-			if files[j].mod.Before(files[j+1].mod) {
-				files[j], files[j+1] = files[j+1], files[j]
-			}
-		}
-	}
-}
 
 func T(path string) string {
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		fmt.Println(err)
 		return ""
 	}
 
-	var files []FileInfo
-	for _, entry := range entries {
-		name := entry.Name()
-		if strings.HasPrefix(name, ".") {
+	type entry struct {
+		name string
+		mod  int64
+	}
+	var list []entry
+	for _, e := range entries {
+		if e.Name()[0] == '.' {
 			continue
 		}
-		info, err := entry.Info()
+		info, err := e.Info()
 		if err != nil {
 			continue
 		}
-		files = append(files, FileInfo{
-			name:  name,
-			mod:   info.ModTime(),
-			entry: entry,
-		})
+		list = append(list, entry{e.Name(), info.ModTime().Unix()})
 	}
+	sort.Slice(list, func(i, j int) bool { return list[i].mod > list[j].mod })
 
-	sortByTime(files)
-	var result string
-	for _, file := range files {
-		color := getColor(path+"/"+file.name, file.entry)
-		result += fmt.Sprintf("%s%s%s\n", color, file.name, Reset)
+	names := make([]string, len(list))
+	for i, e := range list {
+		names[i] = e.name
 	}
-	return result
+	return joinNames(path, names)
 }
