@@ -44,7 +44,11 @@ func main() {
 
 	// print files
 	if len(files) > 0 {
-		printNames(files)
+		if config.long {
+			printLongFiles(files)
+		} else {
+			printNames(files)
+		}
 	}
 
 	// when using folder title:

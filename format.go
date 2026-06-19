@@ -7,24 +7,63 @@ import (
 	"strings"
 )
 
-func printDirectory(parent_path string, config Config) { // error ?
-	entries, err := os.ReadDir(parent_path)
+func printDirectory(parent_path string, config Config) {
+	rawEntries, err := os.ReadDir(parent_path)
 	if err != nil {
 		panic(err)
 	}
 
-	var entrynames []string
-	var dirs []os.DirEntry
-	for _, entry := range entries {
+	// Filter hidden files
+	var entries []os.DirEntry
+	for _, entry := range rawEntries {
 		if strings.HasPrefix(entry.Name(), ".") && !config.all {
 			continue
 		}
-		if entry.IsDir() { // unuseful if not recursive!
+		entries = append(entries, entry)
+	}
+
+	// Sort: by modification time (newest first) if -t, else case-insensitive alpha
+	n := len(entries)
+	if config.time {
+		for i := 0; i < n; i++ {
+			for j := 0; j < n-i-1; j++ {
+				iInfo, _ := entries[j].Info()
+				jInfo, _ := entries[j+1].Info()
+				if iInfo != nil && jInfo != nil && iInfo.ModTime().Before(jInfo.ModTime()) {
+					entries[j], entries[j+1] = entries[j+1], entries[j]
+				}
+			}
+		}
+	} else {
+		for i := 0; i < n; i++ {
+			for j := 0; j < n-i-1; j++ {
+				if strings.ToLower(entries[j].Name()) > strings.ToLower(entries[j+1].Name()) {
+					entries[j], entries[j+1] = entries[j+1], entries[j]
+				}
+			}
+		}
+	}
+	if config.reverse {
+		for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
+			entries[i], entries[j] = entries[j], entries[i]
+		}
+	}
+
+	// Build names and dirs lists in sorted order
+	var entrynames []string
+	var dirs []os.DirEntry
+	for _, entry := range entries {
+		if entry.IsDir() {
 			dirs = append(dirs, entry)
 		}
 		entrynames = append(entrynames, entry.Name())
 	}
-	printNames(entrynames)
+
+	if config.long {
+		printLong(parent_path, entries)
+	} else {
+		printNames(entrynames)
+	}
 
 	if config.recursive {
 		for _, dir := range dirs {
