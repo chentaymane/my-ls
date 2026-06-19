@@ -11,15 +11,17 @@ import (
 	"time"
 )
 
+// printLong prints directory contents in long (-l) format.
+// It includes a "total" line showing 1 KiB blocks used.
 func printLong(parent_path string, entries []os.DirEntry) {
 	type row struct {
 		mode    string
 		nlink   string
 		owner   string
 		group   string
-		size    string
+		size    string // byte count, or "major, minor" for devices
 		modTime string
-		name    string
+		name    string // colored, with symlink arrow if applicable
 	}
 
 	var rows []row
@@ -58,11 +60,28 @@ func printLong(parent_path string, entries []os.DirEntry) {
 			timeStr = modTime.Format("Jan _2  2006")
 		}
 
+		// Size field: "major, minor" for block/char devices; byte count otherwise
+		mode := info.Mode()
+		var sizeStr string
+		if mode&os.ModeDevice != 0 {
+			maj := (stat.Rdev >> 8) & 0xfff
+			min := (stat.Rdev & 0xff) | ((stat.Rdev >> 12) & 0xfff00)
+			sizeStr = fmt.Sprintf("%d, %d", maj, min)
+		} else {
+			sizeStr = strconv.FormatInt(info.Size(), 10)
+		}
+
+		// Name: colored + symlink arrow
+		color := getColor(fullPath, entry)
 		name := entry.Name()
-		if info.Mode()&os.ModeSymlink != 0 {
-			if target, err := os.Readlink(fullPath); err == nil {
-				name += " -> " + target
-			}
+		var nameDisplay string
+		if mode&os.ModeSymlink != 0 {
+			target, _ := os.Readlink(fullPath)
+			nameDisplay = color + name + colorReset + " -> " + target
+		} else if color != "" {
+			nameDisplay = color + name + colorReset
+		} else {
+			nameDisplay = name
 		}
 
 		rows = append(rows, row{
@@ -70,9 +89,9 @@ func printLong(parent_path string, entries []os.DirEntry) {
 			nlink:   strconv.FormatUint(uint64(stat.Nlink), 10),
 			owner:   ownerStr,
 			group:   groupStr,
-			size:    strconv.FormatInt(info.Size(), 10),
+			size:    sizeStr,
 			modTime: timeStr,
-			name:    name,
+			name:    nameDisplay,
 		})
 	}
 
@@ -155,11 +174,27 @@ func printLongFiles(paths []string) {
 			timeStr = modTime.Format("Jan _2  2006")
 		}
 
+		mode := info.Mode()
+		var sizeStr string
+		if mode&os.ModeDevice != 0 {
+			maj := (stat.Rdev >> 8) & 0xfff
+			min := (stat.Rdev & 0xff) | ((stat.Rdev >> 12) & 0xfff00)
+			sizeStr = fmt.Sprintf("%d, %d", maj, min)
+		} else {
+			sizeStr = strconv.FormatInt(info.Size(), 10)
+		}
+
+		color := getColor(path, fileInfoEntry{info})
+
 		name := path
-		if info.Mode()&os.ModeSymlink != 0 {
-			if target, err := os.Readlink(path); err == nil {
-				name += " -> " + target
-			}
+		var nameDisplay string
+		if mode&os.ModeSymlink != 0 {
+			target, _ := os.Readlink(path)
+			nameDisplay = color + name + colorReset + " -> " + target
+		} else if color != "" {
+			nameDisplay = color + name + colorReset
+		} else {
+			nameDisplay = name
 		}
 
 		rows = append(rows, row{
@@ -167,9 +202,9 @@ func printLongFiles(paths []string) {
 			nlink:   strconv.FormatUint(uint64(stat.Nlink), 10),
 			owner:   ownerStr,
 			group:   groupStr,
-			size:    strconv.FormatInt(info.Size(), 10),
+			size:    sizeStr,
 			modTime: timeStr,
-			name:    name,
+			name:    nameDisplay,
 		})
 	}
 
@@ -205,4 +240,3 @@ func printLongFiles(paths []string) {
 		)
 	}
 }
-

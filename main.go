@@ -47,7 +47,30 @@ func main() {
 		if config.long {
 			printLongFiles(files)
 		} else {
-			printNames(files)
+			display := make([]string, len(files))
+			for i, f := range files {
+				info, err := os.Lstat(f)
+				color := ""
+				if err == nil {
+					mode := info.Mode()
+					switch {
+					case mode&os.ModeSymlink != 0:
+						if _, serr := os.Stat(f); serr != nil {
+							color = lsBroken
+						} else {
+							color = lsSymlink
+						}
+					case mode&0111 != 0:
+						color = lsExec
+					}
+				}
+				if color != "" {
+					display[i] = color + f + colorReset
+				} else {
+					display[i] = f
+				}
+			}
+			printNames(files, display)
 		}
 	}
 
